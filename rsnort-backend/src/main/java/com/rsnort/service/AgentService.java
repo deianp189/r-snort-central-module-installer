@@ -10,15 +10,15 @@ import java.util.List;
 
 @Service
 public class AgentService {
-    private final File agentFile = new File("/etc/rsnort-backend/agents.json");
+    private static final String AGENTS_PATH = "/var/lib/rsnort-backend/agents.json";
+    private final File agentFile = new File(AGENTS_PATH);
     private final ObjectMapper mapper = new ObjectMapper();
 
     public List<Agent> getAgents() throws Exception {
         if (!agentFile.exists()) {
-            throw new Exception("El archivo /etc/rsnort-backend/agents.json no existe");
+            throw new Exception("El archivo " + AGENTS_PATH + " no existe");
         }
-        return mapper.readValue(agentFile, new TypeReference<List<Agent>>() {
-        });
+        return mapper.readValue(agentFile, new TypeReference<List<Agent>>() {});
     }
 
     public void saveAgents(List<Agent> agents) throws Exception {
@@ -28,7 +28,7 @@ public class AgentService {
     public void addAgent(Agent newAgent) throws Exception {
         List<Agent> current = getAgents();
         boolean exists = current.stream()
-                .anyMatch(a -> a.getId().equals(newAgent.getId()) || a.getIp().equals(newAgent.getIp()));
+            .anyMatch(a -> a.getId().equals(newAgent.getId()) || a.getIp().equals(newAgent.getIp()));
         if (!exists) {
             current.add(newAgent);
             saveAgents(current);
@@ -46,5 +46,4 @@ public class AgentService {
             throw new Exception("Agente no encontrado");
         }
     }
-
 }

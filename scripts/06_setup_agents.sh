@@ -3,40 +3,40 @@ set -euo pipefail
 source "$(dirname "$0")/00_common.sh"
 exec > >(tee -a "$LOG_DIR/06_setup_agents.log") 2>&1
 
-AGENTS_DIR=/etc/rsnort-backend
+# Ruta nueva para compatibilidad de escritura desde el backend
+AGENTS_DIR=/var/lib/rsnort-backend
 AGENTS_JSON=$AGENTS_DIR/agents.json
+
+# Asegura el directorio de destino con permisos adecuados
 install -d -m 755 "$AGENTS_DIR"
 
+# Detectar IP local y crear entrada del módulo central
 IP_LOCAL=$(detect_ip)
-declare -a A; A+=("{\"id\":\"central\",\"ip\":\"$IP_LOCAL\"}")
+log "✔ Agente central añadido automáticamente: central ($IP_LOCAL)"
 
-echo "[INFO] Agente central añadido automáticamente: central ($IP_LOCAL)"
+# Crear archivo temporal
+TMP_AGENTS=$(mktemp)
+echo "{\"id\":\"central\",\"ip\":\"$IP_LOCAL\"}" > "$TMP_AGENTS"
 
-COUNT=0
+# Solicitar más agentes
 while true; do
   read -rp "¿Añadir otro agente? (y/N) " yn
   [[ "$yn" =~ ^[Yy]$ ]] || break
   read -rp "  ID: " ID
   read -rp "  IP: " IP
-  A+=("{\"id\":\"$ID\",\"ip\":\"$IP\"}")
-  ((COUNT++))
+  echo "{\"id\":\"$ID\",\"ip\":\"$IP\"}" >> "$TMP_AGENTS"
 done
 
-printf "[\n" >"$AGENTS_JSON"
-for ((i=0; i<${#A[@]}; i++)); do
-  SEP=$([[ $i -lt $((${#A[@]}-1)) ]] && echo ,)
-  printf "  %s%s\n" "${A[$i]}" "$SEP" >>"$AGENTS_JSON"
-done
-printf "]\n" >>"$AGENTS_JSON"
+# Generar archivo final
+jq -s '.' "$TMP_AGENTS" > "$AGENTS_JSON"
 
-chmod 644 "$AGENTS_JSON"
+# Establecer permisos de lectura/escritura para todos
+chmod 666 "$AGENTS_JSON"
 
-if (( COUNT > 0 )); then
-  log "✔ agents.json creado en $AGENTS_JSON con $((COUNT + 1)) agentes:"
-else
-  log "✔ agents.json creado en $AGENTS_JSON solo con el módulo central."
-fi
+# Eliminar archivo temporal
+rm -f "$TMP_AGENTS"
 
-for agent in "${A[@]}"; do
-  echo " - $(echo $agent | jq -r '.id') @ $(echo $agent | jq -r '.ip')"
-done
+# Mostrar resumen
+TOTAL=$(jq length "$AGENTS_JSON")
+log "✔ Archivo $AGENTS_JSON creado con $TOTAL agente(s):"
+jq -r '.[] | "   - \(.id) → \(.ip)"' "$AGENTS_JSON"

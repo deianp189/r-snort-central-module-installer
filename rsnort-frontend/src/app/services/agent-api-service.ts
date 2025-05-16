@@ -63,4 +63,16 @@ export class AgentApiService {
     );
   }
 
+  getGrafanaDashboardUid(): Promise<string> {
+    return this.http
+      .get<{ url?: string }>(`${this.baseUrl}/grafana/dashboard-url`)
+      .toPromise()
+      .then(res => {
+        if (!res?.url) return '';
+        const match = res.url.match(/\/d\/([^/]+)/);
+        return match ? match[1] : '';
+      })
+      .catch(() => '');
+  }
+
 }

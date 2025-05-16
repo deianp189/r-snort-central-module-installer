@@ -32,6 +32,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   agentSrv = inject(AgentService);
   api = inject(AgentApiService);
 
+  uid: string = '';
   status?: { agent_id: string; snort_running: boolean };
   lastAlert?: any;
   archived: string[] = [];
@@ -42,7 +43,6 @@ export class StatusComponent implements OnInit, OnDestroy {
   private intervalId?: ReturnType<typeof setInterval>;
   private allAgentsInterval?: ReturnType<typeof setInterval>;
 
-  // NUEVO: Estado global de todos los agentes
   agentStates: {
     id: string;
     ip: string;
@@ -50,10 +50,15 @@ export class StatusComponent implements OnInit, OnDestroy {
     lastAlert?: { msg: string; timestamp: string };
   }[] = [];
 
-  // NUEVO: Trackeo de servicios por agente
   loadingServices: Record<string, Record<string, boolean>> = {};
 
-  ngOnInit() {
+  async ngOnInit() {
+    try {
+      this.uid = await this.api.getGrafanaDashboardUid();
+    } catch (error) {
+      console.error('Error al obtener el UID del dashboard:', error);
+    }
+
     this.sub = this.agentSrv.current$.subscribe(agent => {
       if (agent) {
         this.refreshStatus();
@@ -120,11 +125,11 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   get tempPanelUrl(): string {
-    return `http://${this.ip}:3000/d-solo/ALgSiPiWk/snort-ids-ips-dashboard?orgId=1&panelId=29&refresh=1m`;
+    return `http://${this.ip}:3000/d-solo/${this.uid}/snort-ids-ips-dashboard?orgId=1&panelId=29&refresh=1m`;
   }
 
   get sysPanelUrl(): string {
-    return `http://${this.ip}:3000/d-solo/ALgSiPiWk/snort-ids-ips-dashboard?orgId=1&panelId=28&refresh=1m`;
+    return `http://${this.ip}:3000/d-solo/${this.uid}/snort-ids-ips-dashboard?orgId=1&panelId=28&refresh=1m`;
   }
 
   async refreshAllAgentsStates() {
@@ -142,7 +147,6 @@ export class StatusComponent implements OnInit, OnDestroy {
     );
     this.agentStates = enriched;
 
-    // Inicializa estructura de servicios si no existe
     enriched.forEach(agent => {
       if (!this.loadingServices[agent.id]) {
         this.loadingServices[agent.id] = {
@@ -169,7 +173,6 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   confirmDelete(id: string): void {
     const name = id;
-
     const paso1 = confirm(`🗑 ¿Eliminar el agente "${name}"?\n\nEsta acción eliminará su entrada del sistema.`);
     if (!paso1) return;
 
@@ -183,6 +186,4 @@ export class StatusComponent implements OnInit, OnDestroy {
       alert(`❌ Error al eliminar el agente "${name}": ${err?.error || err}`);
     });
   }
-
-
 }

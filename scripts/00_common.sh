@@ -28,5 +28,3 @@ detect_ip() {
     | cut -d/ -f1 \
     | head -n1
 }
-
-

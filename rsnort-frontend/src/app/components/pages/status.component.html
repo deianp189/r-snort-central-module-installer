@@ -1,0 +1,95 @@
+<div class="dashboard">
+  <!-- Gráficas (Grafana) -->
+  <div class="graphs-column">
+    <mat-card class="grafana-card">
+      <iframe [src]="tempPanelUrl | safeUrl" width="100%" height="300" frameborder="0"></iframe>
+    </mat-card>
+    <mat-card class="grafana-card">
+      <iframe [src]="sysPanelUrl | safeUrl" width="100%" height="300" frameborder="0"></iframe>
+    </mat-card>
+  </div>
+
+  <!-- Estado de Snort + Logs -->
+  <div class="status-column">
+    <!-- Estado de Snort -->
+    <mat-card class="status-card">
+      <h2>🛡 Estado de Snort</h2>
+      <ng-container *ngIf="status; else noStatus">
+        <p><strong>Agente:</strong> <code class="api-value">{{ status.agent_id }}</code></p>
+        <p>
+          <strong>Estado:</strong>
+          <code class="api-value" [ngClass]="status.snort_running ? 'api-up' : 'api-down'">
+            {{ status.snort_running ? 'Activo' : 'Inactivo' }}
+          </code>
+        </p>
+        <p *ngIf="lastAlert">
+          <strong>Última alerta:</strong>
+          <code class="api-value">{{ lastAlert.msg }} — {{ lastAlert.timestamp }}</code>
+        </p>
+      </ng-container>
+      <ng-template #noStatus>
+        <p>No se ha podido obtener el estado del agente.</p>
+      </ng-template>
+      <button mat-raised-button color="primary" (click)="restartSnort()" [disabled]="loading">
+        🔁 Reiniciar Snort
+      </button>
+    </mat-card>
+
+    <!-- Logs Archivados -->
+    <mat-card class="status-card archived-panel">
+      <h2>Logs archivados</h2>
+      <ng-container *ngIf="archived.length; else noFiles">
+        <div class="archived-select-container">
+          <label class="archived-label" for="archivedSelect">Selecciona archivo</label>
+          <select id="archivedSelect" class="archived-native-select" [(ngModel)]="selectedFile">
+            <option value="" disabled selected>-- elige un archivo --</option>
+            <option *ngFor="let file of archived" [value]="file">{{ file }}</option>
+          </select>
+          <button mat-stroked-button color="accent" [disabled]="!selectedFile" (click)="download(selectedFile)">
+            Descargar
+          </button>
+        </div>
+      </ng-container>
+      <ng-template #noFiles>
+        <p>No hay archivos disponibles.</p>
+      </ng-template>
+    </mat-card>
+  </div>
+
+  <!-- Estado general de los agentes -->
+  <div class="agents">
+    <h2 class="agent-section-title">📡 Estado general de los agentes</h2>
+    <div class="agents-grid">
+      <mat-card *ngFor="let agent of agentStates" class="status-card">
+        <h2>🌐 Estado del agente {{ agent.id }}</h2>
+
+        <ng-container *ngIf="agent.statuses; else unreachable">
+          <p><strong>IP:</strong> <code class="api-value">{{ agent.ip }}</code></p>
+
+
+          <div *ngFor="let name of ['snort','ingest','metrics']" class="agent-service">
+            <strong>{{ name }}:</strong>
+            <code class="api-value" [ngClass]="agent.statuses[name] === 'active' ? 'api-up' : 'api-down'">
+              {{ agent.statuses[name] || 'desconocido' }}
+            </code>
+            <button mat-mini-button color="accent" [disabled]="loadingServices[agent.id][name]"
+              (click)="restartAgentService(agent.id, agent.ip, name)">
+              🔁 Reiniciar
+            </button>
+          </div>
+
+          <p *ngIf="agent.lastAlert">
+            <strong>Última alerta:</strong>
+            <code class="api-value">
+              {{ agent.lastAlert.msg }} — {{ agent.lastAlert.timestamp }}
+            </code>
+          </p>
+        </ng-container>
+
+        <ng-template #unreachable>
+          <p><strong>Estado:</strong> <code class="api-down">No accesible</code></p>
+        </ng-template>
+      </mat-card>
+    </div>
+  </div>
+</div>

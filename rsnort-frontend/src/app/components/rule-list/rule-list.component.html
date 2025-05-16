@@ -1,0 +1,46 @@
+<mat-card class="add-rule-card">
+  <h2>➕ Agregar nueva regla</h2>
+
+  <textarea [(ngModel)]="newRuleText"
+            placeholder="Escribe aquí tu regla Snort..."
+            class="custom-textarea"></textarea>
+
+  <button mat-raised-button color="primary" class="add-btn" (click)="addRule()">
+    Agregar regla
+  </button>
+</mat-card>
+
+<mat-card>
+  <h2>🧩 Reglas personalizadas</h2>
+
+  <ng-container *ngIf="loading; else loaded">
+    <mat-spinner></mat-spinner>
+  </ng-container>
+
+  <ng-template #loaded>
+    <mat-list *ngIf="rules.length; else noRules">
+      <mat-list-item *ngFor="let rule of rules">
+        <mat-icon matListIcon>gavel</mat-icon>
+
+        <div class="rule-content">
+          <div class="rule-main">
+            <span><strong>SID:</strong> {{ rule.sid }}</span>
+            <span><strong>MSG:</strong> {{ rule.msg || 'Sin mensaje' }}</span>
+          </div>
+
+          <div class="raw-wrapper">
+            <div class="raw">{{ rule.raw }}</div>
+          </div>
+        </div>
+
+        <button mat-icon-button color="warn" (click)="confirmDelete(rule.sid)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-list-item>
+    </mat-list>
+
+    <ng-template #noRules>
+      <p>No hay reglas personalizadas definidas.</p>
+    </ng-template>
+  </ng-template>
+</mat-card>

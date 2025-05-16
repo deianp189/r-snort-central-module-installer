@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { ReactiveFormsModule } from '@angular/forms';
+import { AgentService } from '../../services/agent.service';
 
 @Component({
   selector: 'app-login',
@@ -29,7 +30,8 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private agentService: AgentService 
   ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -37,23 +39,43 @@ export class LoginComponent {
     });
   }
 
-  onSubmit() {
-    if (this.form.valid) {
-      const { email, password } = this.form.value;
 
-      console.log('[LoginComponent] Enviando login:', email);
-      this.auth.login(email, password).subscribe({
-        next: () => {
-          console.log('[LoginComponent] Login correcto. Redirigiendo...');
-          this.router.navigate(['/overview']);
-        },
-        error: err => {
-          console.error('[LoginComponent] Error en login:', err);
-          alert('Login fallido: ' + err.message);
-        }
-      });
-    }
+  onSubmit() {
+    if (!this.form.valid) { return; }
+
+    const { email, password } = this.form.value;
+
+    this.auth.login(email!, password!).subscribe({
+      next: async () => {
+        console.log('[Login] OK – cargando agentes…');
+        try {
+          await this.agentService.load();          // ✅ ahora con token
+        } catch { /* opcional: mostrar Toast */ }
+
+        this.router.navigate(['/overview']);
+      },
+      error: err => alert('Credenciales incorrectas')
+    });
   }
+
+
+  // onSubmit() {
+  //   if (this.form.valid) {
+  //     const { email, password } = this.form.value;
+
+  //     console.log('[LoginComponent] Enviando login:', email);
+  //     this.auth.login(email, password).subscribe({
+  //       next: () => {
+  //         console.log('[LoginComponent] Login correcto. Redirigiendo...');
+  //         this.router.navigate(['/overview']);
+  //       },
+  //       error: err => {
+  //         console.error('[LoginComponent] Error en login:', err);
+  //         alert('Login fallido: ' + err.message);
+  //       }
+  //     });
+  //   }
+  // }
 
 
   // onSubmit() {

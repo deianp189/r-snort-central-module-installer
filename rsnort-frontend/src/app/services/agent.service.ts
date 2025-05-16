@@ -2,7 +2,7 @@ import { Injectable, inject, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Agent } from '../models/agent.model';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
-import { environment } from '../../environmets/environment.prod';
+import { environment } from '../../environments/environment.prod';
 
 @Injectable({ providedIn: 'root' })
 export class AgentService {

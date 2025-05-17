@@ -11,6 +11,7 @@ import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
 import { AgentApiService } from '../../services/agent-api-service';
 import { AgentService } from '../../services/agent.service';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-status',
@@ -25,7 +26,8 @@ import { MatIconModule } from '@angular/material/icon';
     MatFormFieldModule,
     MatSelectModule,
     FormsModule,
-    MatIconModule
+    MatIconModule,
+    MatTooltipModule
   ],
 })
 export class StatusComponent implements OnInit, OnDestroy {
@@ -182,8 +184,19 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.agentSrv.remove(id).then(() => {
       alert(`✅ Agente "${name}" eliminado correctamente.`);
       this.refreshAllAgentsStates();
+
+      // 🔄 Fuerza recarga de agentes en el servicio (y notificación global)
+      this.agentSrv.load().then(() => {
+        this.agentSrv.setCurrent('central'); // opcional: volver al central tras borrar
+      });
+
     }).catch(err => {
-      alert(`❌ Error al eliminar el agente "${name}": ${err?.error || err}`);
+      const msg = err?.error || err;
+      if (msg.includes('central')) {
+        alert(`⚠️ El módulo central no puede eliminarse.`);
+      } else {
+        alert(`❌ Error al eliminar el agente "${name}": ${msg}`);
+      }
     });
   }
 }

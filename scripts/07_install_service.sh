@@ -47,7 +47,7 @@ ExecStart=/usr/bin/java -jar $BUILD_DIR/rsnort.jar
 EnvironmentFile=$SYS_ENV
 SuccessExitStatus=143
 Restart=on-failure
-ProtectSystem=strict
+ProtectSystem=full
 PrivateTmp=true
 NoNewPrivileges=true
 

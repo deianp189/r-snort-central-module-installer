@@ -19,20 +19,25 @@
   <button mat-button [matMenuTriggerFor]="agentMenu" class="agent-button">
     <mat-icon>{{ currentId === 'central' ? 'public' : 'dns' }}</mat-icon>
     <span>
-      {{ currentId === 'central'
-      ? 'Central (' + getAgentIp(currentId) + ')'
-      : getAgentIp(currentId) }}
+      {{
+        currentId === 'central'
+          ? 'Central (' + getAgentIp(currentId) + ')'
+          : currentId + ' (' + getAgentIp(currentId) + ')'
+      }}
     </span>
     <mat-icon>arrow_drop_down</mat-icon>
   </button>
+
   <mat-menu #agentMenu="matMenu" xPosition="before" yPosition="below" panelClass="agent-menu">
     <button mat-menu-item *ngFor="let a of agents" (click)="switchAgent(a.id)" [class.selected]="a.id === currentId"
       class="agent-menu-item">
       <mat-icon>{{ a.id === 'central' ? 'public' : 'dns' }}</mat-icon>
       <span>
-        {{ a.id === 'central'
-        ? 'Central (' + a.ip + ')'
-        : a.ip }}
+        {{
+          a.id === 'central'
+            ? 'Central (' + a.ip + ')'
+            : a.id + ' (' + a.ip + ')'
+        }}
       </span>
     </button>
   </mat-menu>
@@ -41,7 +46,6 @@
   <button mat-icon-button class="add-agent-button" (click)="openDialog()" aria-label="Añadir nuevo agente">
     <mat-icon class="add-center-button">add_circle</mat-icon>
   </button>
-
 
   <!-- Menú de usuario -->
   <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-button">

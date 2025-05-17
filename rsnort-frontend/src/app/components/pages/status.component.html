@@ -15,7 +15,7 @@
     <mat-card class="status-card">
       <h2>🛡 Estado de Snort</h2>
       <ng-container *ngIf="status; else noStatus">
-        <p><strong>Agente:</strong> <code class="api-value">{{ status.agent_id }}</code></p>
+        <p><strong>Agente:</strong> <code class="api-value">{{ agentSrv.current?.id }}</code></p>
         <p>
           <strong>Estado:</strong>
           <code class="api-value" [ngClass]="status.snort_running ? 'api-up' : 'api-down'">
@@ -66,12 +66,11 @@
         <ng-container *ngIf="agent.statuses; else unreachable">
           <p><strong>IP:</strong> <code class="api-value">{{ agent.ip }}</code></p>
 
-
           <div *ngFor="let name of ['snort','ingest','metrics']" class="agent-service">
             <strong>{{ name }}:</strong>
             <code class="api-value" [ngClass]="agent.statuses[name] === 'active' ? 'api-up' : 'api-down'">
-              {{ agent.statuses[name] || 'desconocido' }}
-            </code>
+            {{ agent.statuses[name] || 'desconocido' }}
+          </code>
             <button mat-mini-button color="accent" [disabled]="loadingServices[agent.id][name]"
               (click)="restartAgentService(agent.id, agent.ip, name)">
               🔁 Reiniciar
@@ -81,9 +80,16 @@
           <p *ngIf="agent.lastAlert">
             <strong>Última alerta:</strong>
             <code class="api-value">
-              {{ agent.lastAlert.msg }} — {{ agent.lastAlert.timestamp }}
-            </code>
+            {{ agent.lastAlert.msg }} — {{ agent.lastAlert.timestamp }}
+          </code>
           </p>
+
+          <!-- 🗑 Botón de borrar (excepto para 'central') -->
+          <div *ngIf="agent.id !== 'central'" class="delete-button-container">
+            <button mat-icon-button color="warn" matTooltip="Eliminar agente" (click)="confirmDelete(agent.id)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
         </ng-container>
 
         <ng-template #unreachable>

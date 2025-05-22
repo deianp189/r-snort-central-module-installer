@@ -77,8 +77,9 @@ Esto compila e instala automáticamente:
 ---
 
 ## 📸 Capturas de Pantalla
-
-> Puedes añadir aquí capturas reales de tu interfaz web, dashboard de Grafana o consola de logs rotados.
+![1](https://github.com/user-attachments/assets/5746a7ef-8416-4361-8cb2-d8a5629f9400)
+![2](https://github.com/user-attachments/assets/a4be0c33-e116-4bcc-a47c-9066fdd9ccc3)
+![9](https://github.com/user-attachments/assets/4242148f-3d5e-411c-96ad-6c3ba26c5d9b)
 
 ---
 

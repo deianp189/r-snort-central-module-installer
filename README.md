@@ -107,8 +107,6 @@ La plataforma ha sido probada con casos reales de intrusión simulada, incluyend
 - Tráfico DNS malicioso
 - Fugas de emails, tarjetas de crédito y NUSS
 
-Toda la metodología está documentada en el capítulo de pruebas del TFG, incluyendo benchmarks con `pmgraph`.
-
 ---
 
 ## 📚 Documentación Técnica
